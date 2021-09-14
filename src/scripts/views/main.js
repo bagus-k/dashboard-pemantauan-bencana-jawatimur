@@ -13,6 +13,7 @@ const main = () => {
   const disasterList = document.querySelector('#disaster-list');
   const listDisaster = document.querySelector('#drawer-leftbar-content');
   const listDisasterLayer = document.querySelector('#list-disaster');
+
   const map = L.map('map', {zoomControl: false, attributionControl: false
   }).setView([-7.5468636, 111.9801192], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -49,12 +50,26 @@ const main = () => {
   let highwindLayer = L.featureGroup();
   map.addLayer(highwindLayer);
 
-  async function showMarker() {
+  async function getData() {
     const disaster = await DisasterData.getAllDisaster();
     return disaster;
   }
 
-  showMarker().then((disaster) => {
+  function updateMarker() {
+      getData().then((disaster) => {
+        showMarker(map, disaster);
+        LeftBar.showDisasterList(disaster);
+        detailButtonClicked(map,disaster);
+        LeftBar.showDisasterCheckbox();
+        checkboxDisaster();
+      });
+  }
+
+  setInterval(updateMarker, 1000);
+
+
+  //show marker
+  function showMarker(map, disaster){
     disaster.forEach((disasterMarker) => {
       let MarkerCluster = eval(disasterMarker.typeid.toLowerCase() + "Layer" );
       let marker = L.marker(disasterMarker.pos, {
@@ -69,19 +84,35 @@ const main = () => {
                 .setContent(disasterMarker.popup)
                 .setLatLng(disasterMarker.pos);
         map.addLayer(marker);
-        marker.bindPopup(popUp)
-        ;
-        RightBar.setDetailBar(marker, disasterMarker);
+        marker.bindPopup(popUp);
+        marker.dragging.disable();
     });
-    return disaster;
-  })
-  .then((item) => {
-    LeftBar.showDisasterList(item);
-  })
-  .then(() => {
-    LeftBar.showDisasterCheckbox();
-    checkboxDisaster();
-  });
+  }
+
+
+  //detail button event
+  function detailButtonClicked(map, disaster) {
+    map.on('popupopen', function() {
+      let button = document.querySelectorAll('.popup-disaster-detail-button');
+      disaster.forEach((marker, i) => {
+        let getButtonId = '#detail-button-' + marker.id_logs;
+        let popUpOpen = document.querySelector(`${getButtonId}`);
+        let disasterDetailContainer = document.querySelector('#disaster-detail-container');
+        if(popUpOpen != null) {
+          popUpOpen.addEventListener('click', function () {
+            RightBar.setDetail(marker);
+            for(let i =0; i <button.length; i++){
+              button[i].classList.remove('active');
+            }
+            popUpOpen.classList.add('active');
+            if(!disasterDetailContainer.classList.contains('disaster-open')){
+              disasterDetailContainer.classList.toggle('disaster-open');
+             }
+          });
+        }
+      });
+    });
+  }
 
   // Memunculkan icon sesuai checkbox
   function checkboxDisaster() {
@@ -135,12 +166,12 @@ const main = () => {
     event.stopPropagation();
   });
 
-
   closeButton.addEventListener('click', function (event) {
   const disasterDetailContainer = document.querySelector('#disaster-detail-container');
     disasterDetailContainer.classList.remove('disaster-open');
     event.stopPropagation();
   });
+
 }
 
 
