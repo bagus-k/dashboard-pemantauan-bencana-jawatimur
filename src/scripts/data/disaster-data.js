@@ -1,4 +1,5 @@
 import DisasterSource from "./disaster-source.js";
+import RightBar from "../component/rightbar.js";
 
 class DisasterData {
   static async getAllDisaster() {
@@ -19,21 +20,18 @@ class DisasterData {
           return;
         }
         if(dayTemp >= threeDays || marker.status == "BELUM") {
+
           iconUrl = 'src/public/image/disaster-icon/'+ marker.typeid +'.svg';
-          let popups = `
+           let popups = `
             <div id="popup-marker" class="popup-marker-container">
               <h4 class="popup-disaster-name">${marker.disastertype.toUpperCase()}</h4>
               <p class="popup-disaster-detail">${marker.eventdate}</p>
               <p class="popup-disaster-detail">${marker.regency_city.split(' ').reverse().join(' ')}</p>
-              <button type="button" class="popup-disaster-detail-button" onClick="(function(){
-                let disasterDetailContainer = document.querySelector('#disaster-detail-container');
-                disasterDetailContainer.classList.toggle('disaster-open');
-                return false;
-            })();return false;">Detail Bencana</button>
-
+              <button type="submit" class="popup-disaster-detail-button" id="detail-button-${marker.id_logs}" data-id="${marker.id_logs}">Detail Bencana</button>
             </div>
           `;
           markers.push({
+              id_logs: marker.id_logs,
               pos: [marker.latitude, marker.longitude],
               popup:popups,
               iconUrl:iconUrl,
