@@ -345,6 +345,19 @@ a {
   cursor: pointer;
 }
 
+.popup-disaster-detail-button.active {
+  background-color: green;
+  cursor: pointer;
+}
+
+.bg-green {
+  background-color: #5cb85c;
+}
+
+.bg-blue {
+  background-color: blue;
+}
+
 /* toggle button */
 /* The switch - the box around the slider */
 .switch {
@@ -444,8 +457,13 @@ input:checked + .slider:before {
   border-radius: 5px;
 }
 
+.disaster-item.active {
+  background-color: rgba(0,0,0,.4);
+}
+
 .disaster-item:hover {
   cursor: pointer;
+  background-color: rgba(0,0,0,.4);
 }
 
 .disaster-item-img img{
