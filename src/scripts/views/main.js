@@ -50,23 +50,37 @@ const main = () => {
   let highwindLayer = L.featureGroup();
   map.addLayer(highwindLayer);
 
+  let firstTime = true;
+
   async function getData() {
     const disaster = await DisasterData.getAllDisaster();
     return disaster;
   }
 
   function updateMarker() {
-      getData().then((disaster) => {
-        showMarker(map, disaster);
-        LeftBar.showDisasterList(disaster);
-        detailButtonClicked(map,disaster);
-        LeftBar.showDisasterCheckbox();
-        checkboxDisaster();
-      });
+    getData().then((disaster) => {
+      if(!firstTime) {
+        disaster.forEach((item) => {
+          let layer = item.typeid.toLowerCase() + 'Layer';
+          map.removeLayer(eval(layer));
+        });
+      }
+      showMarker(map, disaster);
+      detailButtonClicked(map,disaster);
+      LeftBar.showDisasterList(disaster);
+    }).then(() => {
+      LeftBar.showDisasterCheckbox();
+      checkboxDisaster();
+    });
+    firstTime = false;
   }
 
-  setInterval(updateMarker, 1000);
+  updateMarker();
+  setInterval(updateMarker, setDelay(60));
 
+  function setDelay(second) {
+    return second * 1000;
+  }
 
   //show marker
   function showMarker(map, disaster){
@@ -119,11 +133,12 @@ const main = () => {
     let checkBoxDisaster = document.getElementsByClassName("nav-item");
     for (var i = 0; i < checkBoxDisaster.length; ++i) {
       let getId = checkBoxDisaster[i].childNodes[3].control;
-      getId.addEventListener('change', function() {
-        if (this.checked) {
-          map.addLayer(eval(getId.id));
-        } else {
+      getId.addEventListener('click', function() {
+        console.log(getId);
+        if (!this.checked) {
           map.removeLayer(eval(getId.id));
+        } else {
+          map.addLayer(eval(getId.id));
         }
       });
     }
